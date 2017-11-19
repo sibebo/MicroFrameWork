@@ -27,7 +27,8 @@ class   Option
 
         if (pos_value_separator != std::string::npos)
         {
-            return  current.substr(pos, pos_value_separator - 1);
+            auto temp = current.substr(pos, pos_value_separator - pos);
+            return temp;
         }
         else
         {
@@ -35,9 +36,9 @@ class   Option
         }
     }
 
-    bool    ArgumentIsPresent(const std::string &arguments)
+    bool    ArgumentIsFront(const std::string &arguments)
     {
-        return (arguments.find(sn) != std::string::npos);
+        return (arguments.find(sn) == 0);
     }
 
     bool    ArgumentIsMatching(const std::string &current)
@@ -67,134 +68,6 @@ class   Option
 
         return current.substr(pos_value_separator);
     }
-
-    void    ParseShort(int argc, char **argv, int &index)
-    {
-        std::string     current(argv[index++]);
-
-        auto    arguments = GetRawArguments(current);
-
-        if (ArgumentIsPresent(arguments))
-        {
-            if (b != nullptr)
-            {
-                *b = true;
-                was_present = true;
-            }
-            else if (ArgumentIsLast(arguments))
-            {
-                std::string value;
-                if (HasEmbeddedValue(current))
-                {
-                    value = GetEmbeddedValue(current);
-                }
-                else if (index < argc)
-                {
-                    value = argv[index++];
-                }
-                else
-                {
-                    throw std::runtime_error(std::string() + "missing value for last argument: --" + ln);
-                }
-
-                if (i != nullptr)
-                {
-                    *i = std::stoi(value);
-                    was_present = true;
-                }
-                else if (f != nullptr)
-                {
-                    *f = std::stof(value);
-                    was_present = true;
-                }
-                else if (s != nullptr)
-                {
-                    *s = value;
-                    was_present = true;
-                }
-            }
-            else
-            {
-                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn);
-            }
-        }
-    }
-
-    void    ParseLong(int argc, char **argv, int &index)
-    {
-        std::string     current(argv[index++]);
-
-        if (ArgumentIsMatching(current))
-        {
-            if (b != nullptr)
-            {
-                *b = true;
-                was_present = true;
-            }
-            else
-            {
-                std::string value;
-                if (HasEmbeddedValue(current))
-                {
-                    value = GetEmbeddedValue(current);
-                }
-                else if (index < argc)
-                {
-                    value = argv[index++];
-                }
-                else
-                {
-                    throw std::runtime_error(std::string() + "missing value for last argument: --" + ln);
-                }
-
-                if (i != nullptr)
-                {
-                    *i = std::stoi(value);
-                    was_present = true;
-                }
-                else if (f != nullptr)
-                {
-                    *f = std::stof(value);
-                    was_present = true;
-                }
-                else if (s != nullptr)
-                {
-                    *s = value;
-                    was_present = true;
-                }
-                else
-                {
-                    throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn);
-                }
-            }
-        }
-    }
-
-    bool    Parse(int argc, char **argv, int &index)
-    {
-        std::string     current(argv[index]);
-
-        if (current.find_first_not_of('-') == 2)
-        {
-            ParseLong(argc, argv, index);
-        }
-        else if (current.find_first_not_of('-') == 1)
-        {
-            ParseShort(argc, argv, index);
-        }
-        else
-        {
-            ++index;
-        }
-
-        if (IsRequired() && !IsPresent())
-        {
-            throw std::runtime_error(std::string() + "Missing argument: " + LongName());
-        }
-
-        return was_present;
-    }
-
 
     //----------------------------------
     std::string GetArgumentValue(std::string &current, std::vector<std::string> &args)
@@ -271,7 +144,7 @@ class   Option
             current.erase(pos, 1);
         }
 
-        if (current.compare("-") == 0 || current.empty())
+        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
         {
             args.erase(args.begin());
         }
@@ -284,7 +157,7 @@ class   Option
 
         auto    arguments = GetRawArguments(current);
 
-        if (ArgumentIsPresent(arguments))
+        if (ArgumentIsFront(arguments))
         {
             RemoveShortArgumentFromFront(args);
 
@@ -346,19 +219,6 @@ public:
     bool        IsPresent() const {return was_present;}
     std::string LongName() const {return ln;}
 
-    bool    Parse(int argc, char **argv)
-    {
-        int index = 1;
-
-        bool    found{false};
-        while (index < argc && !found)
-        {
-            found = Parse(argc, argv, index);
-        }
-
-        return found;
-    }
-
     bool    Parse(std::vector<std::string> &args)
     {
         std::string     &current = args.front();
@@ -379,12 +239,12 @@ public:
 class   OptionParser
 {
     bool                is_help{false};
-    Option              help{'h', "help", "Printing this help", is_help};
 
     std::string         app_description;
     std::string         app_version;
 
     std::vector<std::string>    positionals;
+    std::vector<std::string>    unknown;
 
     std::vector<Option> options;
 
@@ -403,11 +263,16 @@ class   OptionParser
         std::cout << std::endl;
     }
 
-    std::vector<std::string>    ParseArgs(int argc, char **argv)
+    std::vector<std::string>    GetArgs(int argc, char **argv)
     {
         std::vector<std::string>   args(argv, argv + argc);
 
         return args;
+    }
+
+    bool    IsOption(const std::string &s)
+    {
+        return (s.find('-') == 0);
     }
 
 public:
@@ -432,45 +297,35 @@ public:
 
     bool    Parse(int argc, char **argv)
     {
-        auto    args = ParseArgs(argc, argv);
+        Add({'h', "help", "Printing this help", is_help});
 
-        if (help.Parse(argc, argv))
-        {
-            PrintHelp(argv[0]);
-            return false;
-        }
-
-        for (Option &option : options)
-        {
-            option.Parse(argc, argv);
-        }
-
-        return true;
-    }
-
-    bool    ParseOneAtATime(int argc, char **argv)
-    {
-        Add(help);
-
-        auto    args = ParseArgs(argc, argv);
+        auto    args = GetArgs(argc, argv);
         args.erase(args.begin());
 
         while (!args.empty())
         {
-            bool    found = false;
-            for (Option &option : options)
+            if (IsOption(args.front()))
             {
-                if (!option.IsPresent())
+                bool    found = false;
+                for (Option &option : options)
                 {
-                    if (option.Parse(args))
+                    if (!option.IsPresent())
                     {
-                        found = true;
-                        break;
+                        if (option.Parse(args))
+                        {
+                            found = true;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (!found)
+                if (!found)
+                {
+                    unknown.push_back(args.front());
+                    args.erase(args.begin());
+                }
+            }
+            else
             {
                 positionals.push_back(args.front());
                 args.erase(args.begin());
