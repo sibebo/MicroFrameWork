@@ -5,10 +5,11 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 
 class   Option
 {
-    char        sn;
+    char        sn{' '};
     std::string ln;
     std::string h;
 
@@ -193,6 +194,7 @@ class   Option
 
 
 public:
+    Option() {}
     Option(char short_name, std::string long_name, std::string help, bool &value, bool is_required = false)
         : sn(short_name), ln(long_name), h(help), b(&value), is_required(is_required)
     {}
@@ -237,7 +239,7 @@ class   OptionParser
     std::vector<std::string>    positionals;
     std::vector<std::string>    unknown;
 
-    std::vector<Option> options;
+    std::map<std::string, Option> options;
 
     void    PrintHelp(std::string app_name)
     {
@@ -271,17 +273,28 @@ public:
         : app_description(app_description), app_version(app_version)
     {}
 
-    OptionParser(std::string app_description, std::string app_version, const Option &options)
+    OptionParser(std::string app_description, std::string app_version, const Option &option)
         : app_description(app_description), app_version(app_version)
-    {this->options.push_back(options);}
+    {Add(option);}
 
     OptionParser(std::string app_description, std::string app_version, const std::vector<Option> &options)
-        : app_description(app_description), app_version(app_version), options(options)
-    {}
+        : app_description(app_description), app_version(app_version) //, options(options)
+    {Add(options);}
+
+    void    Add(const std::vector<Option> &options)
+    {
+        for (const Option &option : options)
+        {
+            Add(option);
+        }
+    }
 
     void    Add(const Option &option)
     {
-        options.push_back(option);
+        //options["hej"] = option;
+        //options[option.LongName()] = option;
+        //options.insert(std::make_pair(option.LongName(), option));
+        options.emplace(option.LongName(), option);
     }
 
     bool    IsHelp() const {return is_help;}
@@ -298,8 +311,9 @@ public:
             if (IsOption(args.front()))
             {
                 bool    found = false;
-                for (Option &option : options)
+                for (auto &m : options)     //Option &option : options)
                 {
+                    Option  &option = m.second;
                     if (!option.IsPresent())
                     {
                         if (option.Parse(args))
@@ -332,7 +346,8 @@ public:
         return true;
     }
 
-    const std::vector<std::string>& Positionals() {return positionals;}
+    const std::vector<std::string>& Positionals() const {return positionals;}
+    const Option&                   operator[](const std::string &long_name) {return options[long_name];}
 };
 
 
