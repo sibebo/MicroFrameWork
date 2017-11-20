@@ -9,9 +9,20 @@
 
 class   Option
 {
+public:
+    enum    OPTION_TYPE
+    {
+        BOOL,
+        INT,
+        FLOAT,
+        STRING
+    };
+
+private:
     char        sn{' '};
     std::string ln;
     std::string h;
+    OPTION_TYPE option_type{BOOL};
 
     bool        *b{nullptr};
     int         *i{nullptr};
@@ -196,21 +207,24 @@ class   Option
 public:
     Option() {}
     Option(char short_name, std::string long_name, std::string help, bool &value, bool is_required = false)
-        : sn(short_name), ln(long_name), h(help), b(&value), is_required(is_required)
+        : sn(short_name), ln(long_name), h(help), option_type(BOOL), b(&value), is_required(is_required)
     {}
     Option(char short_name, std::string long_name, std::string help, int &value, bool is_required = false)
-        : sn(short_name), ln(long_name), h(help), i(&value), is_required(is_required)
+        : sn(short_name), ln(long_name), h(help), option_type(INT), i(&value), is_required(is_required)
     {}
     Option(char short_name, std::string long_name, std::string help, float &value, bool is_required = false)
-        : sn(short_name), ln(long_name), h(help), f(&value), is_required(is_required)
+        : sn(short_name), ln(long_name), h(help), option_type(FLOAT), f(&value), is_required(is_required)
     {}
     Option(char short_name, std::string long_name, std::string help, std::string &value, bool is_required = false)
-        : sn(short_name), ln(long_name), h(help), s(&value), is_required(is_required)
+        : sn(short_name), ln(long_name), h(help), option_type(STRING), s(&value), is_required(is_required)
     {}
 
     bool        IsRequired() const {return is_required;}
     bool        IsPresent() const {return was_present;}
     std::string LongName() const {return ln;}
+    char        ShortName() const {return sn;}
+    OPTION_TYPE OptionType() const {return option_type;}
+    std::string HelpText() const {return h;}
 
     bool    Parse(std::vector<std::string> &args)
     {
@@ -253,8 +267,56 @@ class   OptionParser
         }
 
         std::cout << app_name << ", version: " << app_version << std::endl;
+        std::cout << std::string(79, '-') << std::endl;
         std::cout << app_description << std::endl;
         std::cout << std::endl;
+
+        std::size_t     max_length = 0;
+        for (auto &m : options)
+        {
+            Option  &option = m.second;
+            max_length = std::max(max_length, option.LongName().length());
+        }
+
+        for (auto &m : options)
+        {
+            Option  &option = m.second;
+
+            std::stringstream   stream;
+
+            stream << "--" << std::setw(max_length) << std::left << option.LongName()
+                   << " -" << std::setw(1) << std::left << option.ShortName();
+
+            switch (option.OptionType())
+            {
+            case Option::OPTION_TYPE::BOOL:
+                stream << std::setw(9) << " ";
+            break;
+            case Option::OPTION_TYPE::INT:
+                stream << std::setw(9) << " <integer>";
+            break;
+            case Option::OPTION_TYPE::FLOAT:
+                stream << std::setw(9) << " <float>";
+            break;
+            case Option::OPTION_TYPE::STRING:
+                stream << std::setw(9) << " <string>";
+            break;
+            }
+
+            if (option.HelpText().length() < 80 - (max_length + 15))
+            {
+                stream << "  " << option.HelpText() << std::endl;
+            }
+            else
+            {
+                stream << std::endl;
+                stream << std::string(max_length + 15, ' ') << option.HelpText() << std::endl;
+            }
+
+            std::cout << stream.str();
+        }
+
+        std::cout << std::string(79, '-') << std::endl;
     }
 
     std::vector<std::string>    GetArgs(int argc, char **argv)

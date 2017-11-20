@@ -29,15 +29,14 @@ public:
         if (options.Parse(argc, argv))
         {
             is_ok = Validate(options);
+            if (!is_ok)
+            {
+                options.Help();
+            }
         }
         else
         {
             is_ok = false;
-        }
-
-        if (!is_ok)
-        {
-            options.Help();
         }
 
         return is_ok;
