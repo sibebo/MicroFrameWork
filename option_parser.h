@@ -233,6 +233,7 @@ class   OptionParser
 {
     bool                is_help{false};
 
+    std::string         app_name;
     std::string         app_description;
     std::string         app_version;
 
@@ -241,7 +242,7 @@ class   OptionParser
 
     std::map<std::string, Option> options;
 
-    void    PrintHelp(std::string app_name)
+    void    PrintHelp()
     {
         std::string name = app_name;
 
@@ -304,7 +305,14 @@ public:
         Add({'h', "help", "Printing this help", is_help});
 
         auto    args = GetArgs(argc, argv);
+        app_name = args.front();
         args.erase(args.begin());
+
+        if (args.empty())
+        {
+            PrintHelp();
+            return false;
+        }
 
         while (!args.empty())
         {
@@ -339,13 +347,19 @@ public:
 
         if (IsHelp())
         {
-            PrintHelp(argv[0]);
+            PrintHelp();
             return false;
         }
 
         return true;
     }
 
+    void    Help()
+    {
+        PrintHelp();
+    }
+
+    bool                            HasPositionals() const {return !positionals.empty();}
     const std::vector<std::string>& Positionals() const {return positionals;}
     const Option&                   operator[](const std::string &long_name) {return options[long_name];}
 };

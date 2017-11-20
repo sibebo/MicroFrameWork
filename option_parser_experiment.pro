@@ -6,4 +6,5 @@ CONFIG -= qt
 SOURCES += main.cpp
 
 HEADERS += \
-    option_parser.h
+    option_parser.h \
+    application_base.h
