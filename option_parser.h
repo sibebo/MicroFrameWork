@@ -69,7 +69,6 @@ class   Option
         return current.substr(pos_value_separator);
     }
 
-    //----------------------------------
     std::string GetArgumentValue(std::string &current, std::vector<std::string> &args)
     {
         std::string value;
@@ -90,49 +89,50 @@ class   Option
         return value;
     }
 
-
-    bool    ParseLong(std::vector<std::string> &args)
+    bool    AcceptBool()
     {
-        std::string     current = args.front();
-
-        if (ArgumentIsMatching(current))
+        if (b != nullptr)
         {
-            args.erase(args.begin()); // Remove recognized option from list.
+            *b = true;
+            was_present = true;
 
-            if (b != nullptr)
+            return true;
+        }
+
+        return false;
+    }
+
+    void    AcceptValue(std::string &current, std::vector<std::string> &args, bool is_long)
+    {
+        std::string value = GetArgumentValue(current, args);
+
+        if (i != nullptr)
+        {
+            *i = std::stoi(value);
+            was_present = true;
+        }
+        else if (f != nullptr)
+        {
+            *f = std::stof(value);
+            was_present = true;
+        }
+        else if (s != nullptr)
+        {
+            *s = value;
+            was_present = true;
+        }
+        else
+        {
+            if (is_long)
             {
-                *b = true;
-                was_present = true;
+                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln + " : " + value);
             }
             else
             {
-                std::string value = GetArgumentValue(current, args);
-
-                if (i != nullptr)
-                {
-                    *i = std::stoi(value);
-                    was_present = true;
-                }
-                else if (f != nullptr)
-                {
-                    *f = std::stof(value);
-                    was_present = true;
-                }
-                else if (s != nullptr)
-                {
-                    *s = value;
-                    was_present = true;
-                }
-                else
-                {
-                    throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln + " : " + value);
-                }
+                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn + " : " + value);
             }
         }
-
-        return was_present;
     }
-
 
     void    RemoveShortArgumentFromFront(std::vector<std::string> &args)
     {
@@ -150,6 +150,22 @@ class   Option
         }
     }
 
+    bool    ParseLong(std::vector<std::string> &args)
+    {
+        std::string     current = args.front();
+
+        if (ArgumentIsMatching(current))
+        {
+            args.erase(args.begin()); // Remove recognized option from list.
+
+            if (!AcceptBool())
+            {
+                AcceptValue(current, args, true);
+            }
+        }
+
+        return was_present;
+    }
 
     bool    ParseShort(std::vector<std::string> &args)
     {
@@ -161,34 +177,9 @@ class   Option
         {
             RemoveShortArgumentFromFront(args);
 
-            if (b != nullptr)
+            if (!AcceptBool() && ArgumentIsLast(arguments))
             {
-                *b = true;
-                was_present = true;
-            }
-            else if (ArgumentIsLast(arguments))
-            {
-                std::string value = GetArgumentValue(current, args);
-
-                if (i != nullptr)
-                {
-                    *i = std::stoi(value);
-                    was_present = true;
-                }
-                else if (f != nullptr)
-                {
-                    *f = std::stof(value);
-                    was_present = true;
-                }
-                else if (s != nullptr)
-                {
-                    *s = value;
-                    was_present = true;
-                }
-                else
-                {
-                    throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn + " : " + value);
-                }
+                AcceptValue(current, args, false);
             }
             else
             {
@@ -340,6 +331,8 @@ public:
 
         return true;
     }
+
+    const std::vector<std::string>& Positionals() {return positionals;}
 };
 
 
