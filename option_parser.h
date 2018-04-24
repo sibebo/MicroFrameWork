@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <map>
@@ -226,6 +227,28 @@ public:
     OPTION_TYPE OptionType() const {return option_type;}
     std::string HelpText() const {return h;}
 
+    std::string ValueAsString() const
+    /// Returns the referenced value as string.
+    /// @return     string representing the referenced value.
+    {
+        switch (OptionType())
+        {
+        case Option::OPTION_TYPE::BOOL:
+        break;
+        case Option::OPTION_TYPE::INT:
+            return std::to_string(*i);
+        break;
+        case Option::OPTION_TYPE::FLOAT:
+            return std::to_string(*f);
+        break;
+        case Option::OPTION_TYPE::STRING:
+            return *s;
+        break;
+        }
+
+        return std::string();
+    }
+
     bool    Parse(std::vector<std::string> &args)
     {
         std::string     &current = args.front();
@@ -310,7 +333,20 @@ class   OptionParser
             else
             {
                 stream << std::endl;
-                stream << std::string(max_length + 15, ' ') << option.HelpText() << std::endl;
+                stream << std::string(max_length + 16, ' ') << option.HelpText() << std::endl;
+            }
+
+            if (option.IsRequired())
+            {
+                stream << std::string(max_length + 16, ' ') << "Required."
+                       << std::endl;
+            }
+
+            if (!option.IsRequired() && option.OptionType() != Option::OPTION_TYPE::BOOL)
+            {
+                stream << std::string(max_length + 16, ' ') << "Default: "
+                       << option.ValueAsString()
+                       << std::endl;
             }
 
             std::cout << stream.str();
