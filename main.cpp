@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "option_parser.h"
+#include "application_base.h"
 //#include <sstream>
 //#include <string>
 //#include <vector>
@@ -45,10 +46,44 @@ void    TestOptionParser(int argc, char **argv)
     }
 }
 
+class MyApp : public ApplicationBase
+{
+    bool    extreme{false};
+    float   speed{42.0};
+    std::string name{"klaverkalorius"};
+
+    virtual void    Setup(OptionParser &options) override
+    {
+        options.Add({
+                        {'x', "extreme", "Make everything extreme", extreme, false},
+                        {'s', "speed", "The magic speed", speed, false},
+                        {'n', "name", "Who are you?", name, false}
+                    });
+    }
+
+public:
+    MyApp(std::string app_description, std::string app_version)
+        : ApplicationBase(app_description, app_version)
+    {}
+
+    virtual int     Run() override
+    {
+        std::cout << extreme << std::endl;
+        std::cout << speed << std::endl;
+        std::cout << name << std::endl;
+    }
+};
+
 
 int main(int argc, char **argv)
 {
-    TestOptionParser(argc, argv);
+//    TestOptionParser(argc, argv);
+
+    MyApp   my_app("this is my app!", "0.0.0");
+    if (my_app.Init(argc, argv))
+    {
+        my_app.Run();
+    }
 
     cout << "Hello World!" << endl;
     return 0;
