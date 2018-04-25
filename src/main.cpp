@@ -57,7 +57,7 @@ class MyApp : public ApplicationBase
     virtual void    Setup(OptionParser &options) override
     {
         options.Add({
-                        {'b', "bool", "just a boolean", b, false},
+                        {'b', "bool", "just a boolean", b, true},
                         {'i', "int", "just an integer", number, false},
                         {'x', "extreme", "Make everything extreme", extreme, false},
                         {'s', "speed", "The magic speed", speed, false},

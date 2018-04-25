@@ -660,6 +660,16 @@ public:
             }
         }
 
+        for (const auto &m : options)
+        {
+            const Option &option = m.second;
+
+            if (option.IsRequired() && !option.IsPresent())
+            {
+                throw (std::runtime_error(std::string("Missing required option: --") + option.LongName()));
+            }
+        }
+
         if (IsHelp())
         {
             PrintHelp();
