@@ -35,223 +35,223 @@ private:
     bool        was_present{false};
     bool        requires_value{false};
 
-    std::string GetRawArguments(const std::string &current)
-    /// Returns the argument part, i.e. the one between '-' and optional '='.
-    /// @param the entire argument, e.g. "-abc=42" or "--option=42".
-    /// @return     the argument part, e.g. "abc" or "option".
-    {
-        auto    pos = current.find_first_not_of('-');
-        auto    pos_value_separator = current.find_first_of('=');
+//    std::string GetRawArguments(const std::string &current)
+//    /// Returns the argument part, i.e. the one between '-' and optional '='.
+//    /// @param the entire argument, e.g. "-abc=42" or "--option=42".
+//    /// @return     the argument part, e.g. "abc" or "option".
+//    {
+//        auto    pos = current.find_first_not_of('-');
+//        auto    pos_value_separator = current.find_first_of('=');
 
-        if (pos_value_separator != std::string::npos)
-        {
-            auto temp = current.substr(pos, pos_value_separator - pos);
-            return temp;
-        }
-        else
-        {
-            return  current.substr(pos);
-        }
-    }
+//        if (pos_value_separator != std::string::npos)
+//        {
+//            auto temp = current.substr(pos, pos_value_separator - pos);
+//            return temp;
+//        }
+//        else
+//        {
+//            return  current.substr(pos);
+//        }
+//    }
 
-    bool    ArgumentIsFront(const std::string &arguments)
-    /// Returns true if the short name of the option matches the first char
-    /// in the argument. Otherwise false.
-    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
-    /// @return             true if short name matches first char in arguments. Otherwise, false.
-    {
-        return (arguments.find(sn) == 0);
-    }
+//    bool    ArgumentIsFront(const std::string &arguments)
+//    /// Returns true if the short name of the option matches the first char
+//    /// in the argument. Otherwise false.
+//    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
+//    /// @return             true if short name matches first char in arguments. Otherwise, false.
+//    {
+//        return (arguments.find(sn) == 0);
+//    }
 
-    bool    ArgumentIsMatching(const std::string &current)
-    /// Returns true if the long name of the option matches the current argument.
-    /// @param  current     current argument.
-    /// @return             true if current matches the options long name. Otherwise, false.
-    {
-        return (GetRawArguments(current).compare(ln) == 0);
-    }
+//    bool    ArgumentIsMatching(const std::string &current)
+//    /// Returns true if the long name of the option matches the current argument.
+//    /// @param  current     current argument.
+//    /// @return             true if current matches the options long name. Otherwise, false.
+//    {
+//        return (GetRawArguments(current).compare(ln) == 0);
+//    }
 
-    bool    ArgumentIsLast(const std::string &arguments)
-    /// Returns true if the short name of the option is the last char in the argument block.
-    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
-    /// @return             true if short name matches last char in arguments. Otherwise, false.
-    {
-        return (arguments.find(sn) == arguments.length() - 1);
-    }
+//    bool    ArgumentIsLast(const std::string &arguments)
+//    /// Returns true if the short name of the option is the last char in the argument block.
+//    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
+//    /// @return             true if short name matches last char in arguments. Otherwise, false.
+//    {
+//        return (arguments.find(sn) == arguments.length() - 1);
+//    }
 
-    bool    HasEmbeddedValue(const std::string &current)
-    {
-        return  !current.empty();
-        //return  (current.find_first_of('=') != std::string::npos);
-    }
+//    bool    HasEmbeddedValue(const std::string &current)
+//    {
+//        return  !current.empty();
+//        //return  (current.find_first_of('=') != std::string::npos);
+//    }
 
-    std::string GetEmbeddedValue(const std::string &current)
-    {
-        if (current.front() == '=')
-        {
-            return current.substr(1);
-        }
-        else
-        {
-            return current;
-        }
-    }
+//    std::string GetEmbeddedValue(const std::string &current)
+//    {
+//        if (current.front() == '=')
+//        {
+//            return current.substr(1);
+//        }
+//        else
+//        {
+//            return current;
+//        }
+//    }
 
-    std::string GetArgumentValue(const std::string &current, std::vector<std::string> &args)
-    {
-        std::string value;
-        if (HasEmbeddedValue(current))
-        {
-            value = GetEmbeddedValue(current);
-            args.erase(args.begin()); // Remove recognized option from list.
-        }
-        else if (!args.empty())
-        {
-            value = args.front();
-            args.erase(args.begin()); // Remove recognized option from list.
-        }
-        else
-        {
-            throw std::runtime_error(std::string() + "missing value for last argument: --" + ln);
-        }
+//    std::string GetArgumentValue(const std::string &current, std::vector<std::string> &args)
+//    {
+//        std::string value;
+//        if (HasEmbeddedValue(current))
+//        {
+//            value = GetEmbeddedValue(current);
+//            args.erase(args.begin()); // Remove recognized option from list.
+//        }
+//        else if (!args.empty())
+//        {
+//            value = args.front();
+//            args.erase(args.begin()); // Remove recognized option from list.
+//        }
+//        else
+//        {
+//            throw std::runtime_error(std::string() + "missing value for last argument: --" + ln);
+//        }
 
-        return value;
-    }
+//        return value;
+//    }
 
-    bool    AcceptBool()
-    /// If option is registered as a bool, the value is set to true and true is returned. Otherwise, false is returned.
-    /// @return     true if the option is registered as a bool. Otherwise, false.
-    {
-        if (b != nullptr)
-        {
-            *b = true;
-            was_present = true;
+//    bool    AcceptBool()
+//    /// If option is registered as a bool, the value is set to true and true is returned. Otherwise, false is returned.
+//    /// @return     true if the option is registered as a bool. Otherwise, false.
+//    {
+//        if (b != nullptr)
+//        {
+//            *b = true;
+//            was_present = true;
 
-            return true;
-        }
+//            return true;
+//        }
 
-        return false;
-    }
+//        return false;
+//    }
 
-    bool    AcceptValue(const std::string &current, std::vector<std::string> &args, bool is_long)
-    ///
-    {
-        std::string value = GetArgumentValue(current, args);
+//    bool    AcceptValue(const std::string &current, std::vector<std::string> &args, bool is_long)
+//    ///
+//    {
+//        std::string value = GetArgumentValue(current, args);
 
-        if (value.empty())
-        {
-            if (is_long)
-            {
-                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln);
-            }
-            else
-            {
-                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn);
-            }
-        }
-
-        if (i != nullptr)
-        {
-            *i = std::stoi(value);
-            was_present = true;
-        }
-        else if (f != nullptr)
-        {
-            *f = std::stof(value);
-            was_present = true;
-        }
-        else if (s != nullptr)
-        {
-            *s = value;
-            was_present = true;
-        }
-        else
-        {
-            if (is_long)
-            {
-                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln + " : " + value);
-            }
-            else
-            {
-                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn + " : " + value);
-            }
-        }
-
-        return was_present;
-    }
-
-    void    RemoveLongArgumentFromFront(std::vector<std::string> &args)
-    {
-        std::string     &current = args.front();
-
-        auto    pos = current.find(ln);
-        if (pos != std::string::npos)
-        {
-            current.erase(pos, ln.length());
-        }
-
-        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
-        {
-            args.erase(args.begin());
-        }
-    }
-
-    void    RemoveShortArgumentFromFront(std::vector<std::string> &args)
-    {
-        std::string     &current = args.front();
-
-        auto    pos = current.find(sn);
-        if (pos != std::string::npos)
-        {
-            current.erase(pos, 1);
-        }
-
-        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
-        {
-            args.erase(args.begin());
-        }
-    }
-
-    bool    ParseLong(std::vector<std::string> &args)
-    {
-        std::string     current = args.front();
-
-        if (ArgumentIsMatching(current))
-        {
-            args.erase(args.begin()); // Remove recognized option from list.
-
-            if (!AcceptBool())
-            {
-                AcceptValue(current.substr(2 + ln.length()), args, true);
-            }
-        }
-
-        return was_present;
-    }
-
-    bool    ParseShort(std::vector<std::string> &args)
-    {
-        std::string     current = args.front();
-
-        auto    arguments = GetRawArguments(current);
-
-        if (ArgumentIsFront(arguments))
-        {
-            RemoveShortArgumentFromFront(args);
-
-            if (!AcceptBool()) // && ArgumentIsLast(arguments))
-            {
-                AcceptValue(current.substr(1 + 1), args, false);
-            }
+//        if (value.empty())
+//        {
+//            if (is_long)
+//            {
+//                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln);
+//            }
 //            else
 //            {
-//                throw std::runtime_error(std::string() + "Could not find argument for -" + sn);
+//                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn);
 //            }
-        }
+//        }
 
-        return was_present;
-    }
-    //----------------------------------
+//        if (i != nullptr)
+//        {
+//            *i = std::stoi(value);
+//            was_present = true;
+//        }
+//        else if (f != nullptr)
+//        {
+//            *f = std::stof(value);
+//            was_present = true;
+//        }
+//        else if (s != nullptr)
+//        {
+//            *s = value;
+//            was_present = true;
+//        }
+//        else
+//        {
+//            if (is_long)
+//            {
+//                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln + " : " + value);
+//            }
+//            else
+//            {
+//                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn + " : " + value);
+//            }
+//        }
+
+//        return was_present;
+//    }
+
+//    void    RemoveLongArgumentFromFront(std::vector<std::string> &args)
+//    {
+//        std::string     &current = args.front();
+
+//        auto    pos = current.find(ln);
+//        if (pos != std::string::npos)
+//        {
+//            current.erase(pos, ln.length());
+//        }
+
+//        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
+//        {
+//            args.erase(args.begin());
+//        }
+//    }
+
+//    void    RemoveShortArgumentFromFront(std::vector<std::string> &args)
+//    {
+//        std::string     &current = args.front();
+
+//        auto    pos = current.find(sn);
+//        if (pos != std::string::npos)
+//        {
+//            current.erase(pos, 1);
+//        }
+
+//        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
+//        {
+//            args.erase(args.begin());
+//        }
+//    }
+
+//    bool    ParseLong(std::vector<std::string> &args)
+//    {
+//        std::string     current = args.front();
+
+//        if (ArgumentIsMatching(current))
+//        {
+//            args.erase(args.begin()); // Remove recognized option from list.
+
+//            if (!AcceptBool())
+//            {
+//                AcceptValue(current.substr(2 + ln.length()), args, true);
+//            }
+//        }
+
+//        return was_present;
+//    }
+
+//    bool    ParseShort(std::vector<std::string> &args)
+//    {
+//        std::string     current = args.front();
+
+//        auto    arguments = GetRawArguments(current);
+
+//        if (ArgumentIsFront(arguments))
+//        {
+//            RemoveShortArgumentFromFront(args);
+
+//            if (!AcceptBool()) // && ArgumentIsLast(arguments))
+//            {
+//                AcceptValue(current.substr(1 + 1), args, false);
+//            }
+////            else
+////            {
+////                throw std::runtime_error(std::string() + "Could not find argument for -" + sn);
+////            }
+//        }
+
+//        return was_present;
+//    }
+//    //----------------------------------
 
 
 public:
