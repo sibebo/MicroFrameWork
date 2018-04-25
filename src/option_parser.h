@@ -1,6 +1,6 @@
 #ifndef OPTION_PARSER_H
 #define OPTION_PARSER_H
-
+//----------------------------------------------------------------------------
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 
+//----------------------------------------------------------------------------
 class   Option
 {
 public:
@@ -32,8 +33,12 @@ private:
 
     bool        is_required{false};
     bool        was_present{false};
+    bool        requires_value{false};
 
     std::string GetRawArguments(const std::string &current)
+    /// Returns the argument part, i.e. the one between '-' and optional '='.
+    /// @param the entire argument, e.g. "-abc=42" or "--option=42".
+    /// @return     the argument part, e.g. "abc" or "option".
     {
         auto    pos = current.find_first_not_of('-');
         auto    pos_value_separator = current.find_first_of('=');
@@ -50,44 +55,55 @@ private:
     }
 
     bool    ArgumentIsFront(const std::string &arguments)
+    /// Returns true if the short name of the option matches the first char
+    /// in the argument. Otherwise false.
+    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
+    /// @return             true if short name matches first char in arguments. Otherwise, false.
     {
         return (arguments.find(sn) == 0);
     }
 
     bool    ArgumentIsMatching(const std::string &current)
+    /// Returns true if the long name of the option matches the current argument.
+    /// @param  current     current argument.
+    /// @return             true if current matches the options long name. Otherwise, false.
     {
         return (GetRawArguments(current).compare(ln) == 0);
     }
 
     bool    ArgumentIsLast(const std::string &arguments)
+    /// Returns true if the short name of the option is the last char in the argument block.
+    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
+    /// @return             true if short name matches last char in arguments. Otherwise, false.
     {
         return (arguments.find(sn) == arguments.length() - 1);
     }
 
     bool    HasEmbeddedValue(const std::string &current)
     {
-        return  (current.find_first_of('=') != std::string::npos);
+        return  !current.empty();
+        //return  (current.find_first_of('=') != std::string::npos);
     }
 
     std::string GetEmbeddedValue(const std::string &current)
     {
-        auto            pos_value_separator = current.find_first_of('=');
-        std::string     arguments = current.substr(0, pos_value_separator);
-
-        if (pos_value_separator != std::string::npos)
+        if (current.front() == '=')
         {
-            ++pos_value_separator;
+            return current.substr(1);
         }
-
-        return current.substr(pos_value_separator);
+        else
+        {
+            return current;
+        }
     }
 
-    std::string GetArgumentValue(std::string &current, std::vector<std::string> &args)
+    std::string GetArgumentValue(const std::string &current, std::vector<std::string> &args)
     {
         std::string value;
         if (HasEmbeddedValue(current))
         {
             value = GetEmbeddedValue(current);
+            args.erase(args.begin()); // Remove recognized option from list.
         }
         else if (!args.empty())
         {
@@ -103,6 +119,8 @@ private:
     }
 
     bool    AcceptBool()
+    /// If option is registered as a bool, the value is set to true and true is returned. Otherwise, false is returned.
+    /// @return     true if the option is registered as a bool. Otherwise, false.
     {
         if (b != nullptr)
         {
@@ -115,9 +133,22 @@ private:
         return false;
     }
 
-    void    AcceptValue(std::string &current, std::vector<std::string> &args, bool is_long)
+    bool    AcceptValue(const std::string &current, std::vector<std::string> &args, bool is_long)
+    ///
     {
         std::string value = GetArgumentValue(current, args);
+
+        if (value.empty())
+        {
+            if (is_long)
+            {
+                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln);
+            }
+            else
+            {
+                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn);
+            }
+        }
 
         if (i != nullptr)
         {
@@ -144,6 +175,24 @@ private:
             {
                 throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn + " : " + value);
             }
+        }
+
+        return was_present;
+    }
+
+    void    RemoveLongArgumentFromFront(std::vector<std::string> &args)
+    {
+        std::string     &current = args.front();
+
+        auto    pos = current.find(ln);
+        if (pos != std::string::npos)
+        {
+            current.erase(pos, ln.length());
+        }
+
+        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
+        {
+            args.erase(args.begin());
         }
     }
 
@@ -173,7 +222,7 @@ private:
 
             if (!AcceptBool())
             {
-                AcceptValue(current, args, true);
+                AcceptValue(current.substr(2 + ln.length()), args, true);
             }
         }
 
@@ -190,14 +239,14 @@ private:
         {
             RemoveShortArgumentFromFront(args);
 
-            if (!AcceptBool() && ArgumentIsLast(arguments))
+            if (!AcceptBool()) // && ArgumentIsLast(arguments))
             {
-                AcceptValue(current, args, false);
+                AcceptValue(current.substr(1 + 1), args, false);
             }
-            else
-            {
-                throw std::runtime_error(std::string() + "Could not find argument for -" + sn);
-            }
+//            else
+//            {
+//                throw std::runtime_error(std::string() + "Could not find argument for -" + sn);
+//            }
         }
 
         return was_present;
@@ -211,13 +260,13 @@ public:
         : sn(short_name), ln(long_name), h(help), option_type(BOOL), b(&value), is_required(is_required)
     {}
     Option(char short_name, std::string long_name, std::string help, int &value, bool is_required = false)
-        : sn(short_name), ln(long_name), h(help), option_type(INT), i(&value), is_required(is_required)
+        : sn(short_name), ln(long_name), h(help), option_type(INT), i(&value), is_required(is_required), requires_value(true)
     {}
     Option(char short_name, std::string long_name, std::string help, float &value, bool is_required = false)
-        : sn(short_name), ln(long_name), h(help), option_type(FLOAT), f(&value), is_required(is_required)
+        : sn(short_name), ln(long_name), h(help), option_type(FLOAT), f(&value), is_required(is_required), requires_value(true)
     {}
     Option(char short_name, std::string long_name, std::string help, std::string &value, bool is_required = false)
-        : sn(short_name), ln(long_name), h(help), option_type(STRING), s(&value), is_required(is_required)
+        : sn(short_name), ln(long_name), h(help), option_type(STRING), s(&value), is_required(is_required), requires_value(true)
     {}
 
     bool        IsRequired() const {return is_required;}
@@ -255,17 +304,171 @@ public:
 
         if (current.find_first_not_of('-') == 2)
         {
-            ParseLong(args);
+            ParseLongAlt(args);
         }
         else if (current.find_first_not_of('-') == 1)
         {
-            ParseShort(args);
+            ParseShortAlt(args);
         }
 
         return was_present;
     }
+
+private:
+    bool    ParseShortAlt(std::vector<std::string> &args)
+    {
+        std::string &current = args.front();
+
+        if (current.length() <= 1) return false;
+
+        if (current[1] == sn)       // option is first char after leading '-'.
+        {
+            current.erase(1, 1);    // Remove option char.
+            was_present = true;
+
+            if (requires_value)
+            {
+                current.erase(0, 1);    // Remove the leading '-'.
+                if (!current.empty())
+                {
+                    if (current.front() == '=' || current.front() == ':')
+                    {
+                        current.erase(0, 1);    // remove the separator, '=' or ':'.
+                    }
+
+                    try
+                    {
+                        SetValue(current);
+                    }
+                    catch(...)
+                    {
+                        std::stringstream stream;
+                        stream << "Failed parsing value for option '" << sn << "' : '" << current << "'" << std::endl;
+                        throw(std::runtime_error(stream.str()));
+                    }
+
+                    args.erase(args.begin());   // remove option and embedded value.
+                }
+                else
+                {
+                    args.erase(args.begin());   // remove option.
+
+                    try
+                    {
+                        SetValue(args.front());
+                    }
+                    catch(...)
+                    {
+                        std::stringstream stream;
+                        stream << "Failed parsing value for option '" << sn << "' : '" << args.front() << "'" << std::endl;
+                        throw(std::runtime_error(stream.str()));
+                    }
+                    args.erase(args.begin());   // remove value.
+                }
+            }
+            else
+            {
+                SetBool();
+                if (current.length() == 1)
+                {
+                    args.erase(args.begin());   // remove option artifact, '-'.
+                }
+            }
+        }
+
+        return was_present;
+    }
+
+    bool    ParseLongAlt(std::vector<std::string> &args)
+    {
+        std::string &current = args.front();
+
+        if (current.length() <= 2) return false;
+
+        if (current.find(ln) == 2)      // option is first char after leading "--".
+        {
+            was_present = true;
+
+            if (requires_value)
+            {
+                current.erase(0, 2 + ln.length());    // Remove the leading "--" and option long name.
+                if (!current.empty())
+                {
+                    if (current.front() == '=' || current.front() == ':')
+                    {
+                        current.erase(0, 1);    // remove the separator, '=' or ':'.
+                    }
+
+                    try
+                    {
+                        SetValue(current);
+                    }
+                    catch(...)
+                    {
+                        std::stringstream stream;
+                        stream << "Failed parsing value for option '" << ln << "' : '" << current << "'" << std::endl;
+                        throw(std::runtime_error(stream.str()));
+                    }
+                    args.erase(args.begin());   // remove option and embedded value.
+                }
+                else
+                {
+                    args.erase(args.begin());   // remove option.
+
+                    try
+                    {
+                        SetValue(args.front());
+                    }
+                    catch(...)
+                    {
+                        std::stringstream stream;
+                        stream << "Failed parsing value for option '" << ln << "' : '" << args.front() << "'" << std::endl;
+                        throw(std::runtime_error(stream.str()));
+                    }
+                    args.erase(args.begin());   // remove value.
+                }
+            }
+            else
+            {
+                SetBool();
+                args.erase(args.begin());   // remove option.
+            }
+        }
+
+        return was_present;
+    }
+
+    void    SetBool()
+    {
+        if (b != nullptr)
+        {
+            *b = true;
+            was_present = true;
+        }
+    }
+
+    void    SetValue(std::string value)
+    {
+        if (i != nullptr)
+        {
+            *i = std::stoi(value);
+            was_present = true;
+        }
+        else if (f != nullptr)
+        {
+            *f = std::stof(value);
+            was_present = true;
+        }
+        else if (s != nullptr)
+        {
+            *s = value;
+            was_present = true;
+        }
+    }
 };
 
+
+//----------------------------------------------------------------------------
 class   OptionParser
 {
     bool                is_help{false};
@@ -278,6 +481,8 @@ class   OptionParser
     std::vector<std::string>    unknown;
 
     std::map<std::string, Option> options;
+
+    std::vector<std::string>    args;
 
     void    PrintHelp()
     {
@@ -367,6 +572,23 @@ class   OptionParser
         return (s.find('-') == 0);
     }
 
+    bool    Prepare(int argc, char **argv)
+    {
+        Add({'h', "help", "Printing this help", is_help});
+
+        args = GetArgs(argc, argv);
+        app_name = args.front();
+        args.erase(args.begin());
+
+        if (args.empty())
+        {
+            PrintHelp();
+            return false;
+        }
+
+        return true;
+    }
+
 public:
     OptionParser(std::string app_description, std::string app_version)
         : app_description(app_description), app_version(app_version)
@@ -400,17 +622,7 @@ public:
 
     bool    Parse(int argc, char **argv)
     {
-        Add({'h', "help", "Printing this help", is_help});
-
-        auto    args = GetArgs(argc, argv);
-        app_name = args.front();
-        args.erase(args.begin());
-
-        if (args.empty())
-        {
-            PrintHelp();
-            return false;
-        }
+        if (!Prepare(argc, argv)) return false;
 
         while (!args.empty())
         {
@@ -432,8 +644,9 @@ public:
 
                 if (!found)
                 {
-                    unknown.push_back(args.front());
-                    args.erase(args.begin());
+                    throw(std::runtime_error(std::string("Unknown option: ") + args.front()));
+//                    unknown.push_back(args.front());
+//                    args.erase(args.begin());
                 }
             }
             else
@@ -462,5 +675,5 @@ public:
     const Option&                   operator[](const std::string &long_name) {return options[long_name];}
 };
 
-
+//----------------------------------------------------------------------------
 #endif  // OPTION_PARSER_H

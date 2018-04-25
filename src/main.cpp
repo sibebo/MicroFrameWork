@@ -48,6 +48,8 @@ void    TestOptionParser(int argc, char **argv)
 
 class MyApp : public ApplicationBase
 {
+    bool    b{false};
+    int     number{42};
     bool    extreme{false};
     float   speed{42.0};
     std::string name{"klaverkalorius"};
@@ -55,6 +57,8 @@ class MyApp : public ApplicationBase
     virtual void    Setup(OptionParser &options) override
     {
         options.Add({
+                        {'b', "bool", "just a boolean", b, false},
+                        {'i', "int", "just an integer", number, false},
                         {'x', "extreme", "Make everything extreme", extreme, false},
                         {'s', "speed", "The magic speed", speed, false},
                         {'n', "name", "Who are you?", name, false}
@@ -68,9 +72,16 @@ public:
 
     virtual int     Run() override
     {
+        std::cout << b << std::endl;
+        std::cout << number << std::endl;
         std::cout << extreme << std::endl;
         std::cout << speed << std::endl;
         std::cout << name << std::endl;
+
+        for (const auto &p : Positionals())
+        {
+            std::cout << "  " << p << std::endl;
+        }
     }
 };
 

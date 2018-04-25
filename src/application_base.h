@@ -11,6 +11,16 @@ class ApplicationBase
     OptionParser    options;
 
 protected:
+    bool    HasPositionals() const
+    {
+        return options.HasPositionals();
+    }
+
+    const std::vector<std::string>&    Positionals() const
+    {
+        return options.Positionals();
+    }
+
     virtual void    Setup(OptionParser &options) = 0;
     virtual bool    Validate(OptionParser &options)
     {
