@@ -319,8 +319,10 @@ private:
     {
         std::string &current = args.front();
 
+        // Is the option too short to parse?
         if (current.length() <= 1) return false;
 
+        // Does the option match the current short name (with optional value embedded)?
         if (current[1] == sn)       // option is first char after leading '-'.
         {
             current.erase(1, 1);    // Remove option char.
@@ -383,8 +385,10 @@ private:
     {
         std::string &current = args.front();
 
+        // Is the option too short to parse?
         if (current.length() <= 2) return false;
 
+        // Does the option match the current long name (with optional value embedded)?
         if (current.find(ln) == 2)      // option is first char after leading "--".
         {
             was_present = true;
