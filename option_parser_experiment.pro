@@ -3,8 +3,13 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.cpp
+SOURCES += \
+    src/main.cpp
 
 HEADERS += \
-    option_parser.h \
-    application_base.h
+    src/option_parser.h \
+    src/application_base.h
+
+OTHER_FILES += \
+    README.md \
+    LICENSE
