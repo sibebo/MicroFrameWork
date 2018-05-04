@@ -9,6 +9,8 @@
 #include <map>
 
 //----------------------------------------------------------------------------
+namespace microframework
+{
 class   Option
 {
 public:
@@ -721,5 +723,6 @@ public:
     const Option&                   operator[](const std::string &long_name) {return options[long_name];}
 };
 
+}   // namespace microframework
 //----------------------------------------------------------------------------
 #endif  // OPTION_PARSER_H

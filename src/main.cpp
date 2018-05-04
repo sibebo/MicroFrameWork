@@ -21,7 +21,7 @@ void    TestOptionParser(int argc, char **argv)
     int         coping{false};
     float       doing{false};
 
-    OptionParser   parser("just a simple test", "0.0.0",
+    microframework::OptionParser   parser("just a simple test", "0.0.0",
     {
                               {'b', "bool", "a bolean", b},
                               {'i', "int", "an integer", i},
@@ -46,7 +46,7 @@ void    TestOptionParser(int argc, char **argv)
     }
 }
 
-class MyApp : public ApplicationBase
+class MyApp : public microframework::ApplicationBase
 {
     bool    b{false};
     int     number{42};
@@ -54,7 +54,7 @@ class MyApp : public ApplicationBase
     float   speed{42.0};
     std::string name{"klaverkalorius"};
 
-    virtual void    Setup(OptionParser &options) override
+    virtual void    Setup(microframework::OptionParser &options) override
     {
         options.Add({
                         {'b', "bool", "just a boolean", b, true},
@@ -88,7 +88,7 @@ public:
 };
 
 
-class TestApp : public ApplicationBase
+class TestApp : public microframework::ApplicationBase
 {
     // These are the members filled by the OptionParser according to the user input.
     // Initialize your options to ensure default values:
@@ -99,7 +99,7 @@ class TestApp : public ApplicationBase
 
     /// This is an override of the abstract base method.
     /// Add your options here. Note, help option is added automatically.
-    virtual void    Setup(OptionParser &options) override
+    virtual void    Setup(microframework::OptionParser &options) override
     {
         options.Add({
                         {'b', "bool", "just a boolean", b, true},
@@ -111,7 +111,7 @@ class TestApp : public ApplicationBase
 
     /// Validation method. Override the base method to specify your own validation.
     /// In this example, positional arguments are required:
-    virtual bool    Validate(OptionParser &/*options*/) override
+    virtual bool    Validate(microframework::OptionParser &/*options*/) override
     {
         return !Positionals().empty();
     }

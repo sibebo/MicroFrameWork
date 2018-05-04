@@ -9,7 +9,7 @@ USAGE:
 
 #include "application_base.h"
 
-class MyApp : public ApplicationBase
+class MyApp : public microframework::ApplicationBase
 {
     // These are the members filled by the OptionParser according to the user input.
     // Initialize your options to ensure default values:
@@ -20,7 +20,7 @@ class MyApp : public ApplicationBase
 
     /// This is an override of the abstract base method.
     /// Add your options here. Note, help option is added automatically.
-    virtual void    Setup(OptionParser &options) override
+    virtual void    Setup(microframework::OptionParser &options) override
     {
         options.Add({
                         {'b', "bool", "just a boolean", b, true},
@@ -32,7 +32,7 @@ class MyApp : public ApplicationBase
 
     /// Validation method. Override the base method to specify your own validation.
     /// In this example, positional arguments are required:
-    virtual bool    Validate(OptionParser &options) override
+    virtual bool    Validate(microframework::OptionParser &options) override
     {
         return !Positionals().empty();
     }
@@ -79,9 +79,10 @@ int main(int argc, char **argv)
 }
 */
 
-
-
 //-----------------------------------------------------------------------------
+namespace microframework
+{
+
 /**
  * @brief The ApplicationBase class is the application base. Inherit it and fill in your options and mechanics to make a nice command line application.
  */
@@ -174,5 +175,6 @@ public:
     virtual int     Run() = 0;
 };
 
+}   // namespace microframework
 //-----------------------------------------------------------------------------
 #endif  // APPLICATION_BASE_H
