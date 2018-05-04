@@ -488,6 +488,9 @@ class   OptionParser
 
     std::vector<std::string>    args;
 
+    /**
+     * @brief PrintHelp prints the help text to console.
+     */
     void    PrintHelp()
     {
         std::string name = app_name;
@@ -522,38 +525,38 @@ class   OptionParser
             switch (option.OptionType())
             {
             case Option::OPTION_TYPE::BOOL:
-                stream << std::setw(9) << " ";
+                stream << std::setw(10) << " ";
             break;
             case Option::OPTION_TYPE::INT:
-                stream << std::setw(9) << " <integer>";
+                stream << std::setw(10) << " <integer>";
             break;
             case Option::OPTION_TYPE::FLOAT:
-                stream << std::setw(9) << " <float>";
+                stream << std::setw(10) << " <float>";
             break;
             case Option::OPTION_TYPE::STRING:
-                stream << std::setw(9) << " <string>";
+                stream << std::setw(10) << " <string>";
             break;
             }
 
-            if (option.HelpText().length() < 80 - (max_length + 15))
+            if (option.HelpText().length() < 80 - (max_length + 17))
             {
                 stream << "  " << option.HelpText() << std::endl;
             }
             else
             {
                 stream << std::endl;
-                stream << std::string(max_length + 16, ' ') << option.HelpText() << std::endl;
+                stream << std::string(max_length + 17, ' ') << option.HelpText() << std::endl;
             }
 
             if (option.IsRequired())
             {
-                stream << std::string(max_length + 16, ' ') << "Required."
+                stream << std::string(max_length + 17, ' ') << "Required."
                        << std::endl;
             }
 
             if (!option.IsRequired() && option.OptionType() != Option::OPTION_TYPE::BOOL)
             {
-                stream << std::string(max_length + 16, ' ') << "Default: "
+                stream << std::string(max_length + 17, ' ') << "Default: "
                        << option.ValueAsString()
                        << std::endl;
             }
@@ -564,6 +567,12 @@ class   OptionParser
         std::cout << std::string(79, '-') << std::endl;
     }
 
+    /**
+     * @brief GetArgs converts the args to a vector of arguments.
+     * @param argc  argument count. From main.
+     * @param argv  argument values. From main.
+     * @return      a std::vector of arguments.
+     */
     std::vector<std::string>    GetArgs(int argc, char **argv)
     {
         std::vector<std::string>   args(argv, argv + argc);
@@ -571,6 +580,11 @@ class   OptionParser
         return args;
     }
 
+    /**
+     * @brief IsOption returns true if input is an option, i.e. starting with one or two '-'.
+     * @param s     token to test.
+     * @return      returns true if s is an option. I.e. the first char of s is '-'.
+     */
     bool    IsOption(const std::string &s)
     {
         return (s.find('-') == 0);
@@ -606,6 +620,10 @@ public:
         : app_description(app_description), app_version(app_version) //, options(options)
     {Add(options);}
 
+    /**
+     * @brief Add adds a list of options to the option list.
+     * @param options   options to add to option list.
+     */
     void    Add(const std::vector<Option> &options)
     {
         for (const Option &option : options)
@@ -614,6 +632,10 @@ public:
         }
     }
 
+    /**
+     * @brief Add adds a single option to the option list.
+     * @param option    option to add to option list.
+     */
     void    Add(const Option &option)
     {
         //options["hej"] = option;
@@ -624,6 +646,13 @@ public:
 
     bool    IsHelp() const {return is_help;}
 
+    /**
+     * @brief Parse parses the user specified options as defined by argc and agrv.
+     * @param argc      number of arguments. From main.
+     * @param argv      argument values. From main.
+     * @return          true if everything is fine. Otherwise false.
+     * @throws          std::runtime_error in case of a parsing error.
+     */
     bool    Parse(int argc, char **argv)
     {
         if (!Prepare(argc, argv)) return false;
@@ -679,6 +708,9 @@ public:
         return true;
     }
 
+    /**
+     * @brief Help writes the help text to the console.
+     */
     void    Help()
     {
         PrintHelp();
