@@ -329,6 +329,9 @@ class   OptionParser
             max_length = std::max(max_length, option.LongName().length());
         }
 
+        int     left_margin = max_length + 17;
+        int     text_length = 80 - left_margin;
+
         for (auto &m : options)
         {
             Option  &option = m.second;
@@ -354,25 +357,25 @@ class   OptionParser
             break;
             }
 
-            if (option.HelpText().length() < 80 - (max_length + 17))
+            std::string help = option.HelpText();
+            stream << "  " << help.substr(0, text_length) << std::endl;
+
+            std::size_t index = text_length;
+            while (index < help.length())
             {
-                stream << "  " << option.HelpText() << std::endl;
-            }
-            else
-            {
-                stream << std::endl;
-                stream << std::string(max_length + 17, ' ') << option.HelpText() << std::endl;
+                stream << std::string(left_margin, ' ') << help.substr(index, text_length) << std::endl;
+                index += text_length;
             }
 
             if (option.IsRequired())
             {
-                stream << std::string(max_length + 17, ' ') << "Required."
+                stream << std::string(left_margin, ' ') << "Required"
                        << std::endl;
             }
 
             if (!option.IsRequired() && option.OptionType() != Option::OPTION_TYPE::BOOL)
             {
-                stream << std::string(max_length + 17, ' ') << "Default: "
+                stream << std::string(left_margin, ' ') << "Default: "
                        << option.ValueAsString()
                        << std::endl;
             }

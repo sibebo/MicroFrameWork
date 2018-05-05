@@ -103,7 +103,7 @@ class TestApp : public microframework::ApplicationBase
     {
         options.Add({
                         {'b', "bool", "just a boolean", b, true},
-                        {'i', "int", "just an integer", number, false},
+                        {'i', "int", "just an integer kjhriherihtierhieriyerityierytiweytiweyitwyitywitywiryirtyieerytiytriwytiwyituwyirtweitywitywieytiwyerituwyeuitywiueytiwueytirueywuie", number, false},
                         {'s', "speed", "The magic speed", speed, false},
                         {'n', "name", "Who are you?", name, false}
                     });
