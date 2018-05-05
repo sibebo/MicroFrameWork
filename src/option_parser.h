@@ -23,238 +23,19 @@ public:
     };
 
 private:
-    char        sn{' '};
-    std::string ln;
-    std::string h;
-    OPTION_TYPE option_type{BOOL};
+    char        sn{' '};            ///< option short name.
+    std::string ln;                 ///< option long name.
+    std::string h;                  ///< option help text.
+    OPTION_TYPE option_type{BOOL};  ///< option type.
 
-    bool        *b{nullptr};
-    int         *i{nullptr};
-    float       *f{nullptr};
-    std::string *s{nullptr};
+    bool        *b{nullptr};        ///< pointer to value of type bool, OPTION_TYPE::BOOL.
+    int         *i{nullptr};        ///< pointer to value of type int, OPTION_TYPE::INT.
+    float       *f{nullptr};        ///< pointer to value of type float, OPTION_TYPE::FLOAT.
+    std::string *s{nullptr};        ///< pointer to value of type string, OPTION_TYPE::STRING.
 
-    bool        is_required{false};
-    bool        was_present{false};
-    bool        requires_value{false};
-
-//    std::string GetRawArguments(const std::string &current)
-//    /// Returns the argument part, i.e. the one between '-' and optional '='.
-//    /// @param the entire argument, e.g. "-abc=42" or "--option=42".
-//    /// @return     the argument part, e.g. "abc" or "option".
-//    {
-//        auto    pos = current.find_first_not_of('-');
-//        auto    pos_value_separator = current.find_first_of('=');
-
-//        if (pos_value_separator != std::string::npos)
-//        {
-//            auto temp = current.substr(pos, pos_value_separator - pos);
-//            return temp;
-//        }
-//        else
-//        {
-//            return  current.substr(pos);
-//        }
-//    }
-
-//    bool    ArgumentIsFront(const std::string &arguments)
-//    /// Returns true if the short name of the option matches the first char
-//    /// in the argument. Otherwise false.
-//    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
-//    /// @return             true if short name matches first char in arguments. Otherwise, false.
-//    {
-//        return (arguments.find(sn) == 0);
-//    }
-
-//    bool    ArgumentIsMatching(const std::string &current)
-//    /// Returns true if the long name of the option matches the current argument.
-//    /// @param  current     current argument.
-//    /// @return             true if current matches the options long name. Otherwise, false.
-//    {
-//        return (GetRawArguments(current).compare(ln) == 0);
-//    }
-
-//    bool    ArgumentIsLast(const std::string &arguments)
-//    /// Returns true if the short name of the option is the last char in the argument block.
-//    /// @param  arguments   a string containing the argument block, i.e. a single or a sequence of short options, e.g. "-abc".
-//    /// @return             true if short name matches last char in arguments. Otherwise, false.
-//    {
-//        return (arguments.find(sn) == arguments.length() - 1);
-//    }
-
-//    bool    HasEmbeddedValue(const std::string &current)
-//    {
-//        return  !current.empty();
-//        //return  (current.find_first_of('=') != std::string::npos);
-//    }
-
-//    std::string GetEmbeddedValue(const std::string &current)
-//    {
-//        if (current.front() == '=')
-//        {
-//            return current.substr(1);
-//        }
-//        else
-//        {
-//            return current;
-//        }
-//    }
-
-//    std::string GetArgumentValue(const std::string &current, std::vector<std::string> &args)
-//    {
-//        std::string value;
-//        if (HasEmbeddedValue(current))
-//        {
-//            value = GetEmbeddedValue(current);
-//            args.erase(args.begin()); // Remove recognized option from list.
-//        }
-//        else if (!args.empty())
-//        {
-//            value = args.front();
-//            args.erase(args.begin()); // Remove recognized option from list.
-//        }
-//        else
-//        {
-//            throw std::runtime_error(std::string() + "missing value for last argument: --" + ln);
-//        }
-
-//        return value;
-//    }
-
-//    bool    AcceptBool()
-//    /// If option is registered as a bool, the value is set to true and true is returned. Otherwise, false is returned.
-//    /// @return     true if the option is registered as a bool. Otherwise, false.
-//    {
-//        if (b != nullptr)
-//        {
-//            *b = true;
-//            was_present = true;
-
-//            return true;
-//        }
-
-//        return false;
-//    }
-
-//    bool    AcceptValue(const std::string &current, std::vector<std::string> &args, bool is_long)
-//    ///
-//    {
-//        std::string value = GetArgumentValue(current, args);
-
-//        if (value.empty())
-//        {
-//            if (is_long)
-//            {
-//                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln);
-//            }
-//            else
-//            {
-//                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn);
-//            }
-//        }
-
-//        if (i != nullptr)
-//        {
-//            *i = std::stoi(value);
-//            was_present = true;
-//        }
-//        else if (f != nullptr)
-//        {
-//            *f = std::stof(value);
-//            was_present = true;
-//        }
-//        else if (s != nullptr)
-//        {
-//            *s = value;
-//            was_present = true;
-//        }
-//        else
-//        {
-//            if (is_long)
-//            {
-//                throw std::runtime_error(std::string() + "Could not parse value for argument --" + ln + " : " + value);
-//            }
-//            else
-//            {
-//                throw std::runtime_error(std::string() + "Could not parse value for argument -" + sn + " : " + value);
-//            }
-//        }
-
-//        return was_present;
-//    }
-
-//    void    RemoveLongArgumentFromFront(std::vector<std::string> &args)
-//    {
-//        std::string     &current = args.front();
-
-//        auto    pos = current.find(ln);
-//        if (pos != std::string::npos)
-//        {
-//            current.erase(pos, ln.length());
-//        }
-
-//        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
-//        {
-//            args.erase(args.begin());
-//        }
-//    }
-
-//    void    RemoveShortArgumentFromFront(std::vector<std::string> &args)
-//    {
-//        std::string     &current = args.front();
-
-//        auto    pos = current.find(sn);
-//        if (pos != std::string::npos)
-//        {
-//            current.erase(pos, 1);
-//        }
-
-//        if (current.compare("-") == 0 || current.empty() || current.find("-=") == 0)
-//        {
-//            args.erase(args.begin());
-//        }
-//    }
-
-//    bool    ParseLong(std::vector<std::string> &args)
-//    {
-//        std::string     current = args.front();
-
-//        if (ArgumentIsMatching(current))
-//        {
-//            args.erase(args.begin()); // Remove recognized option from list.
-
-//            if (!AcceptBool())
-//            {
-//                AcceptValue(current.substr(2 + ln.length()), args, true);
-//            }
-//        }
-
-//        return was_present;
-//    }
-
-//    bool    ParseShort(std::vector<std::string> &args)
-//    {
-//        std::string     current = args.front();
-
-//        auto    arguments = GetRawArguments(current);
-
-//        if (ArgumentIsFront(arguments))
-//        {
-//            RemoveShortArgumentFromFront(args);
-
-//            if (!AcceptBool()) // && ArgumentIsLast(arguments))
-//            {
-//                AcceptValue(current.substr(1 + 1), args, false);
-//            }
-////            else
-////            {
-////                throw std::runtime_error(std::string() + "Could not find argument for -" + sn);
-////            }
-//        }
-
-//        return was_present;
-//    }
-//    //----------------------------------
-
+    bool        is_required{false};     ///< true if option is required, mandatory.
+    bool        was_present{false};     ///< true if option was found.
+    bool        requires_value{false};  ///< true if option is followed by a value (OPTION_TYPE::INT, OPTION_TYPE::FLOAT, OPTION_TYPE::STRING).
 
 public:
     Option() {}
@@ -285,6 +66,7 @@ public:
         switch (OptionType())
         {
         case Option::OPTION_TYPE::BOOL:
+            return *b ? "true" : "false";
         break;
         case Option::OPTION_TYPE::INT:
             return std::to_string(*i);
@@ -300,24 +82,35 @@ public:
         return std::string();
     }
 
+    /**
+     * @brief Parse checks if the first argument in the list matched this option. If it does, it is parsed and true is returned. Otherwise false is returned.
+     * @param args  Vector of options left to be parsed.
+     * @return      True if the first argument matches this option. Otherwise false.
+     */
     bool    Parse(std::vector<std::string> &args)
     {
         std::string     &current = args.front();
 
         if (current.find_first_not_of('-') == 2)
         {
-            ParseLongAlt(args);
+            return ParseLong(args);
         }
         else if (current.find_first_not_of('-') == 1)
         {
-            ParseShortAlt(args);
+            return ParseShort(args);
         }
 
-        return was_present;
+        return false;
     }
 
 private:
-    bool    ParseShortAlt(std::vector<std::string> &args)
+    /**
+     * @brief ParseShort parses a long option, i.e. an option prefixed by '-'.
+     * @param args      vector of arguements left to be parsed.
+     * @return          true if option matches this option. Otherwise false.
+     * @throws          std::runtime_error in case of a missing value for the option.
+     */
+    bool    ParseShort(std::vector<std::string> &args)
     {
         std::string &current = args.front();
 
@@ -325,65 +118,79 @@ private:
         if (current.length() <= 1) return false;
 
         // Does the option match the current short name (with optional value embedded)?
-        if (current[1] == sn)       // option is first char after leading '-'.
+        if (current[1] != sn)   return false;
+
+        // option is first char after leading '-'.
+        current.erase(1, 1);    // Remove option char.
+
+        if (was_present)
         {
-            current.erase(1, 1);    // Remove option char.
-            was_present = true;
+            std::stringstream stream;
+            stream << "Option already present: '-" << sn << "'" << std::endl;
+            throw(std::runtime_error(stream.str()));
+        }
 
-            if (requires_value)
+        was_present = true;
+
+        if (requires_value)
+        {
+            current.erase(0, 1);    // Remove the leading '-'.
+            if (!current.empty())
             {
-                current.erase(0, 1);    // Remove the leading '-'.
-                if (!current.empty())
+                if (current.front() == '=' || current.front() == ':')
                 {
-                    if (current.front() == '=' || current.front() == ':')
-                    {
-                        current.erase(0, 1);    // remove the separator, '=' or ':'.
-                    }
-
-                    try
-                    {
-                        SetValue(current);
-                    }
-                    catch(...)
-                    {
-                        std::stringstream stream;
-                        stream << "Failed parsing value for option '" << sn << "' : '" << current << "'" << std::endl;
-                        throw(std::runtime_error(stream.str()));
-                    }
-
-                    args.erase(args.begin());   // remove option and embedded value.
+                    current.erase(0, 1);    // remove the separator, '=' or ':'.
                 }
-                else
+
+                try
                 {
-                    args.erase(args.begin());   // remove option.
-
-                    try
-                    {
-                        SetValue(args.front());
-                    }
-                    catch(...)
-                    {
-                        std::stringstream stream;
-                        stream << "Failed parsing value for option '" << sn << "' : '" << args.front() << "'" << std::endl;
-                        throw(std::runtime_error(stream.str()));
-                    }
-                    args.erase(args.begin());   // remove value.
+                    SetValue(current);
                 }
+                catch(...)
+                {
+                    std::stringstream stream;
+                    stream << "Failed parsing value for option '-" << sn << "' : '" << current << "'" << std::endl;
+                    throw(std::runtime_error(stream.str()));
+                }
+
+                args.erase(args.begin());   // remove option and embedded value.
             }
             else
             {
-                SetBool();
-                if (current.length() == 1)
+                args.erase(args.begin());   // remove option.
+
+                try
                 {
-                    args.erase(args.begin());   // remove option artifact, '-'.
+                    SetValue(args.front());
                 }
+                catch(...)
+                {
+                    std::stringstream stream;
+                    stream << "Failed parsing value for option '-" << sn << "' : '" << args.front() << "'" << std::endl;
+                    throw(std::runtime_error(stream.str()));
+                }
+                args.erase(args.begin());   // remove value.
+            }
+        }
+        else
+        {
+            SetBool();
+            if (current.length() == 1)
+            {
+                args.erase(args.begin());   // remove option artifact, '-'.
             }
         }
 
-        return was_present;
+        return true;
     }
 
-    bool    ParseLongAlt(std::vector<std::string> &args)
+    /**
+     * @brief ParseLong parses a long option, i.e. an option prefixed by "--".
+     * @param args      vector of arguements left to be parsed.
+     * @return          true if option matches this option. Otherwise false.
+     * @throws          std::runtime_error in case of a missing value for the option.
+     */
+    bool    ParseLong(std::vector<std::string> &args)
     {
         std::string &current = args.front();
 
@@ -391,57 +198,64 @@ private:
         if (current.length() <= 2) return false;
 
         // Does the option match the current long name (with optional value embedded)?
-        if (current.find(ln) == 2)      // option is first char after leading "--".
+        if (current.find(ln) != 2)  return false;
+
+        // option is first char after leading "--".
+        if (was_present)
         {
-            was_present = true;
+            std::stringstream stream;
+            stream << "Option already present: '--" << ln << "'" << std::endl;
+            throw(std::runtime_error(stream.str()));
+        }
 
-            if (requires_value)
+        was_present = true;
+
+        if (requires_value)
+        {
+            current.erase(0, 2 + ln.length());    // Remove the leading "--" and option long name.
+            if (!current.empty())
             {
-                current.erase(0, 2 + ln.length());    // Remove the leading "--" and option long name.
-                if (!current.empty())
+                if (current.front() == '=' || current.front() == ':')
                 {
-                    if (current.front() == '=' || current.front() == ':')
-                    {
-                        current.erase(0, 1);    // remove the separator, '=' or ':'.
-                    }
-
-                    try
-                    {
-                        SetValue(current);
-                    }
-                    catch(...)
-                    {
-                        std::stringstream stream;
-                        stream << "Failed parsing value for option '" << ln << "' : '" << current << "'" << std::endl;
-                        throw(std::runtime_error(stream.str()));
-                    }
-                    args.erase(args.begin());   // remove option and embedded value.
+                    current.erase(0, 1);    // remove the separator, '=' or ':'.
                 }
-                else
+
+                try
                 {
-                    args.erase(args.begin());   // remove option.
-
-                    try
-                    {
-                        SetValue(args.front());
-                    }
-                    catch(...)
-                    {
-                        std::stringstream stream;
-                        stream << "Failed parsing value for option '" << ln << "' : '" << args.front() << "'" << std::endl;
-                        throw(std::runtime_error(stream.str()));
-                    }
-                    args.erase(args.begin());   // remove value.
+                    SetValue(current);
                 }
+                catch(...)
+                {
+                    std::stringstream stream;
+                    stream << "Failed parsing value for option '--" << ln << "' : '" << current << "'" << std::endl;
+                    throw(std::runtime_error(stream.str()));
+                }
+                args.erase(args.begin());   // remove option and embedded value.
             }
             else
             {
-                SetBool();
                 args.erase(args.begin());   // remove option.
+
+                try
+                {
+                    SetValue(args.front());
+                }
+                catch(...)
+                {
+                    std::stringstream stream;
+                    stream << "Failed parsing value for option '--" << ln << "' : '" << args.front() << "'" << std::endl;
+                    throw(std::runtime_error(stream.str()));
+                }
+                args.erase(args.begin());   // remove value.
             }
         }
+        else
+        {
+            SetBool();
+            args.erase(args.begin());   // remove option.
+        }
 
-        return was_present;
+        return true;
     }
 
     void    SetBool()
@@ -479,16 +293,16 @@ class   OptionParser
 {
     bool                is_help{false};
 
-    std::string         app_name;
-    std::string         app_description;
-    std::string         app_version;
+    std::string         app_name;               ///< application name extracted from the first argument, i.e. argv[0].
+    std::string         app_description;        ///< user specified via constructor.
+    std::string         app_version;            ///< user specified via constructor.
 
-    std::vector<std::string>    positionals;
-    std::vector<std::string>    unknown;
+    std::vector<std::string>    positionals;    /// Vector of positional arguments (i.e. those without leading '-' og "--").
+    //std::vector<std::string>    unknown;        /// Unknown options.
 
-    std::map<std::string, Option> options;
+    std::map<std::string, Option> options;      ///< user specified via constructor or Add. @see Add.
 
-    std::vector<std::string>    args;
+    std::vector<std::string>    args;           ///< the raw arguments, derrived from argc and argv.
 
     /**
      * @brief PrintHelp prints the help text to console.
@@ -592,6 +406,12 @@ class   OptionParser
         return (s.find('-') == 0);
     }
 
+    /**
+     * @brief Prepare takes care of initial initialization including the addition of the help option (-h and --help)
+     * @param argc  argument count. From main.
+     * @param argv  argument values. From main.
+     * @return      returns true if everything is fine. If no arguments are present help is displayed and false is returned.
+     */
     bool    Prepare(int argc, char **argv)
     {
         Add({'h', "help", "Printing this help", is_help});
@@ -607,6 +427,23 @@ class   OptionParser
         }
 
         return true;
+    }
+
+    /**
+     * @brief AssertRequiredOptionsArePresent  Asserts that required options are present. If not, astd::runtime_error exception is thrown.
+     * @throws          std::runtime_error in case of a missing required option.
+     */
+    void    AssertRequiredOptionsArePresent()
+    {
+        for (const auto &m : options)
+        {
+            const Option &option = m.second;
+
+            if (option.IsRequired() && !option.IsPresent())
+            {
+                throw (std::runtime_error(std::string("Missing required option: --") + option.LongName()));
+            }
+        }
     }
 
 public:
@@ -646,6 +483,10 @@ public:
         options.emplace(option.LongName(), option);
     }
 
+    /**
+     * @brief IsHelp returns true if the help option was present, i.e. -h or --help.
+     * @return  true if help option was present.
+     */
     bool    IsHelp() const {return is_help;}
 
     /**
@@ -654,6 +495,7 @@ public:
      * @param argv      argument values. From main.
      * @return          true if everything is fine. Otherwise false.
      * @throws          std::runtime_error in case of a parsing error.
+     * @throws          std::runtime_error in case of a missing required option.
      */
     bool    Parse(int argc, char **argv)
     {
@@ -667,7 +509,7 @@ public:
                 for (auto &m : options)     //Option &option : options)
                 {
                     Option  &option = m.second;
-                    if (!option.IsPresent())
+                    if (true || !option.IsPresent())
                     {
                         if (option.Parse(args))
                         {
@@ -679,7 +521,12 @@ public:
 
                 if (!found)
                 {
-                    throw(std::runtime_error(std::string("Unknown option: ") + args.front()));
+                    std::string     arg = args.front();
+                    if (arg.find_first_not_of('-') == 1)
+                    {
+                        arg = arg.substr(0, 2);
+                    }
+                    throw(std::runtime_error(std::string("Unknown option: ") + arg));
 //                    unknown.push_back(args.front());
 //                    args.erase(args.begin());
                 }
@@ -691,15 +538,7 @@ public:
             }
         }
 
-        for (const auto &m : options)
-        {
-            const Option &option = m.second;
-
-            if (option.IsRequired() && !option.IsPresent())
-            {
-                throw (std::runtime_error(std::string("Missing required option: --") + option.LongName()));
-            }
-        }
+        AssertRequiredOptionsArePresent();  // May throw!
 
         if (IsHelp())
         {
